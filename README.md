@@ -1,25 +1,27 @@
 # 🧠 Diabetes Neural Network
 
-A fully **handcrafted neural network** built from scratch using only **NumPy** — no TensorFlow, no PyTorch, no sklearn — trained to detect diabetes from patient health data.
+A fully **handcrafted neural network** built from scratch using only **NumPy** no TensorFlow, no PyTorch, no sklearn , trained to detect diabetes from patient health data.
 
 ---
-
 ## 📸 Results
-
 ### Training Loss, Accuracy & Confusion Matrix
-![Training Results](assets/diabetes_training.png)
+![Training Results](assets/screenshots/1.png)
+
+![Training Results](assets/screenshots/2.png)
+
+![Training Results](assets/screenshots/3.png)
 
 ---
 
 ## 📖 About
 
-This project implements a complete feedforward neural network without any ML frameworks. Every component — layers, activations, loss functions, backpropagation, and the optimizer — is written manually in pure Python and NumPy. The model is trained on the **PIMA Indians Diabetes Dataset** to classify whether a patient is diabetic or not based on 8 clinical features.
+This project implements a complete feedforward neural network without any ML frameworks. Every component — layers, activations, loss functions, backpropagation, and the optimizer is written manually in pure Python and NumPy. The model is trained on the **PIMA Indians Diabetes Dataset** to classify whether a patient is diabetic or not based on 8 clinical features.
 
 ---
 
 ## 🗃️ Dataset
 
-**PIMA Indians Diabetes Dataset** — a well-known public domain medical dataset originally from the National Institute of Diabetes and Digestive and Kidney Diseases.
+**PIMA Indians Diabetes Dataset** : a well known public domain medical dataset originally from the National Institute of Diabetes and Digestive and Kidney Diseases.
 
 | Feature | Description |
 |---|---|
@@ -81,7 +83,7 @@ The implementation uses `exp(x - max(x))` for numerical stability.
 L = -log(predicted probability of the correct class)
 ```
 
-The backward pass uses a **fused Softmax + Cross-Entropy gradient** — a mathematical shortcut that simplifies the combined derivative to just:
+The backward pass uses a **fused Softmax + Cross-Entropy gradient**: a mathematical shortcut that simplifies the combined derivative to just:
 
 ```
 dinputs = predicted_probabilities
@@ -103,7 +105,7 @@ This is more numerically stable and faster than computing them separately.
 | Decay | 5e-5 |
 | Momentum | 0.85 |
 
-**Momentum** prevents oscillations by accumulating a velocity in the direction of consistent gradients — like a ball rolling downhill that builds up speed. Instead of a raw gradient step, it blends the current gradient with the previous update direction.
+**Momentum** prevents oscillations by accumulating a velocity in the direction of consistent gradients  like a ball rolling downhill that builds up speed. Instead of a raw gradient step, it blends the current gradient with the previous update direction.
 
 **Learning Rate Decay** gradually reduces the learning rate over epochs:
 ```
