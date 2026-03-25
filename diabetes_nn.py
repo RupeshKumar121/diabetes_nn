@@ -241,9 +241,9 @@ class optimizer_SGD:
 
 
 
-dense1      = layer_dense(8, 100)
+dense1      = layer_dense(8, 64)
 activation1 = activation_Relu()
-dense2      = layer_dense(100, 32)
+dense2      = layer_dense(64, 32)
 activation2 = activation_Relu()
 dense3      = layer_dense(32, 2)
 activation3 = activation_softmax()
