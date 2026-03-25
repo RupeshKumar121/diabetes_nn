@@ -3,12 +3,6 @@ import matplotlib.pyplot as plt
 
 np.random.seed(42)
 
-# ─────────────────────────────────────────────────────────────────
-#  PIMA INDIANS DIABETES DATASET (public domain)
-#  Features: Pregnancies, Glucose, BloodPressure, SkinThickness,
-#            Insulin, BMI, DiabetesPedigreeFunction, Age
-#  Label: 0 = No Diabetes, 1 = Diabetes
-# ─────────────────────────────────────────────────────────────────
 
 raw_data = np.array([
     [6,148,72,35,0,33.6,0.627,50,1],[1,85,66,29,0,26.6,0.351,31,0],
@@ -102,9 +96,7 @@ raw_data = np.array([
     [4,146,85,27,100,28.9,0.189,27,0],[2,100,66,20,90,32.9,0.867,28,1],
 ])
 
-# ─────────────────────────────────────────────────────────────────
-#  PREPROCESSING
-# ─────────────────────────────────────────────────────────────────
+
 
 FEATURE_NAMES = [
     "Pregnancies", "Glucose", "Blood Pressure", "Skin Thickness",
@@ -114,18 +106,18 @@ FEATURE_NAMES = [
 X_all = raw_data[:, :8].astype(np.float64)
 y_all = raw_data[:, 8].astype(np.uint8)
 
-# Replace 0s in medical fields with column mean (they're missing values)
+
 zero_invalid_cols = [1, 2, 3, 4, 5]   # Glucose, BP, Skin, Insulin, BMI
 for col in zero_invalid_cols:
     col_mean = X_all[X_all[:, col] != 0, col].mean()
     X_all[X_all[:, col] == 0, col] = col_mean
 
-# Normalize features to [0, 1]  (min-max scaling)
+
 X_min = X_all.min(axis=0)
 X_max = X_all.max(axis=0)
 X_norm = (X_all - X_min) / (X_max - X_min + 1e-8)
 
-# Train / test split  (80 / 20)
+
 indices  = np.random.permutation(len(X_norm))
 split    = int(0.8 * len(indices))
 train_ix = indices[:split]
@@ -140,9 +132,7 @@ print(f"Train    : {len(X_train)} samples")
 print(f"Test     : {len(X_test)} samples\n")
 
 
-# ─────────────────────────────────────────────────────────────────
-#  LAYERS
-# ─────────────────────────────────────────────────────────────────
+
 
 class layer_dense:
     def __init__(self, n_inputs, neurons):
@@ -159,9 +149,6 @@ class layer_dense:
         self.dinputs  = np.dot(dvalues, self.weights.T)
 
 
-# ─────────────────────────────────────────────────────────────────
-#  ACTIVATIONS
-# ─────────────────────────────────────────────────────────────────
 
 class activation_Relu:
     def forward(self, inputs):
@@ -186,9 +173,6 @@ class activation_softmax:
             self.dinputs[i] = np.dot(jacobian, dval)
 
 
-# ─────────────────────────────────────────────────────────────────
-#  FUSED SOFTMAX + CROSS-ENTROPY BACKWARD
-# ─────────────────────────────────────────────────────────────────
 
 class softmax_loss_backward:
     def backward(self, dvalues, y_true):
@@ -198,9 +182,6 @@ class softmax_loss_backward:
         self.dinputs /= samples
 
 
-# ─────────────────────────────────────────────────────────────────
-#  LOSS
-# ─────────────────────────────────────────────────────────────────
 
 class losscategoricalcrossentropy:
     def calculate(self, output, y):
@@ -216,9 +197,7 @@ class losscategoricalcrossentropy:
         return -np.log(correct)
 
 
-# ─────────────────────────────────────────────────────────────────
-#  ACCURACY
-# ─────────────────────────────────────────────────────────────────
+
 
 class accuracyfunction:
     def calculate(self, y_pred, y_true):
@@ -226,9 +205,7 @@ class accuracyfunction:
         return np.mean(predictions == y_true)
 
 
-# ─────────────────────────────────────────────────────────────────
-#  SGD OPTIMIZER  (with momentum + decay)
-# ─────────────────────────────────────────────────────────────────
+
 
 class optimizer_SGD:
     def __init__(self, learning_rate=0.5, decay=1e-4, momentum=0.9):
@@ -262,24 +239,19 @@ class optimizer_SGD:
         self.iterations += 1
 
 
-# ─────────────────────────────────────────────────────────────────
-#  BUILD MODEL
-#  Architecture: 8 → 64 → 32 → 2
-#  Input  : 8 health features
-#  Output : 2 classes  (0 = No Diabetes, 1 = Diabetes)
-# ─────────────────────────────────────────────────────────────────
 
-dense1      = layer_dense(8, 64)   # 8 health features in
+
+dense1      = layer_dense(8, 100)
 activation1 = activation_Relu()
-dense2      = layer_dense(64, 32)
+dense2      = layer_dense(100, 32)
 activation2 = activation_Relu()
-dense3      = layer_dense(32, 2)   # 2 classes out
+dense3      = layer_dense(32, 2)
 activation3 = activation_softmax()
 
 loss_fn     = losscategoricalcrossentropy()
 accuracy_fn = accuracyfunction()
 sl_bwd      = softmax_loss_backward()
-optimizer   = optimizer_SGD(learning_rate=0.1, decay=5e-5, momentum=0.85)
+optimizer   = optimizer_SGD(learning_rate=0.1, decay=5e-5, momentum=0.8)
 
 
 def forward_pass(X):
@@ -298,9 +270,6 @@ def backward_pass(y):
     dense1.backward(activation1.dinputs)
 
 
-# ─────────────────────────────────────────────────────────────────
-#  TRAINING LOOP
-# ─────────────────────────────────────────────────────────────────
 
 EPOCHS           = 5001
 train_loss_hist  = []
@@ -316,7 +285,6 @@ for epoch in range(EPOCHS):
     loss   = loss_fn.calculate(output, y_train)
     t_acc  = accuracy_fn.calculate(output, y_train)
 
-    # Test accuracy (no gradient needed)
     test_out  = forward_pass(X_test)
     test_acc  = accuracy_fn.calculate(test_out, y_test)
 
@@ -324,7 +292,7 @@ for epoch in range(EPOCHS):
     train_acc_hist.append(t_acc)
     test_acc_hist.append(test_acc)
 
-    # Re-run forward on train set before backward (test forward above may have changed layer state)
+
     forward_pass(X_train)
     backward_pass(y_train)
 
@@ -342,9 +310,7 @@ print("-" * 55)
 print(f"\nFinal Test Accuracy : {test_acc_hist[-1]*100:.2f}%")
 
 
-# ─────────────────────────────────────────────────────────────────
-#  PREDICTION FUNCTION
-# ─────────────────────────────────────────────────────────────────
+
 
 def predict_diabetes(patient_data: dict) -> None:
     """
@@ -363,7 +329,7 @@ def predict_diabetes(patient_data: dict) -> None:
         patient_data["age"],
     ]], dtype=np.float64)
 
-    # Apply same normalization as training data
+
     values_norm = (values - X_min) / (X_max - X_min + 1e-8)
     probs       = forward_pass(values_norm)
     pred_class  = np.argmax(probs, axis=1)[0]
@@ -378,7 +344,7 @@ def predict_diabetes(patient_data: dict) -> None:
     print("────────────────────────────────────────────\n")
 
 
-# ─── Example predictions ─────────────────────
+
 predict_diabetes({
     "pregnancies": 6, "glucose": 148, "blood_pressure": 72,
     "skin_thickness": 35, "insulin": 0, "bmi": 33.6,
@@ -392,27 +358,25 @@ predict_diabetes({
 })
 
 
-# ─────────────────────────────────────────────────────────────────
-#  PLOTS
-# ─────────────────────────────────────────────────────────────────
+
 
 fig, axes = plt.subplots(1, 3, figsize=(15, 4))
-fig.suptitle("Diabetes Neural Network — Training Results", fontsize=13, fontweight='bold')
+fig.suptitle("Diabetes Neural Network Training Results", fontsize=13, fontweight='bold')
 
-# Loss curve
+
 axes[0].plot(train_loss_hist, color='crimson', linewidth=1.5)
 axes[0].set_title("Training Loss")
 axes[0].set_xlabel("Epoch"); axes[0].set_ylabel("Loss")
 axes[0].grid(True, alpha=0.3)
 
-# Accuracy curves
+
 axes[1].plot(train_acc_hist, color='steelblue',  linewidth=1.5, label='Train')
 axes[1].plot(test_acc_hist,  color='darkorange', linewidth=1.5, label='Test', linestyle='--')
 axes[1].set_title("Accuracy")
 axes[1].set_xlabel("Epoch"); axes[1].set_ylabel("Accuracy")
 axes[1].set_ylim(0, 1); axes[1].legend(); axes[1].grid(True, alpha=0.3)
 
-# Final confusion matrix
+
 final_preds = np.argmax(forward_pass(X_test), axis=1)
 cm = np.zeros((2, 2), dtype=int)
 for t, p in zip(y_test, final_preds):
